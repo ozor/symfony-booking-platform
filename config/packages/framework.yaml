@@ -2,11 +2,24 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
-    # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    # Для stateless API сессии не нужны
+    session: false
 
     #esi: true
     #fragments: true
+
+    http_method_override: true
+    default_locale: ru
+
+    # PHP errors logging
+    php_errors:
+        log: true
+
+    # Assets configuration
+    assets:
+        # Используем json_manifest_path для production assets
+        # или закомментируйте эту секцию, если assets не используются
+        json_manifest_path: '%kernel.project_dir%/public/build/manifest.json'
 
 when@test:
     framework:

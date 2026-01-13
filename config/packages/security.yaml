@@ -1,0 +1,68 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        # App\User\Domain\Entity\User:
+        #     algorithm: auto
+        #     cost: 12
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        # Временно закомментировано - User entity не существует
+        # user_provider:
+        #     entity:
+        #         class: App\User\Domain\Entity\User
+        #         property: email
+        users_in_memory:
+            memory:
+                users: []
+
+    # Role hierarchy
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+
+    firewalls:
+        dev:
+            # Ensure dev tools and static assets are always allowed
+            pattern: ^/(_profiler|_wdt|css|images|js)/
+            security: false
+
+        # API firewall - временно без аутентификации
+        api:
+            pattern: ^/api
+            stateless: true
+            # Закомментировано до создания TokenAuthenticator
+            # provider: user_provider
+            # custom_authenticators:
+            #     - App\Security\TokenAuthenticator
+            # entry_point: App\Security\TokenAuthenticator
+
+        # Main firewall для остальных путей
+        main:
+            lazy: true
+            # provider: user_provider
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    # Note: Only the *first* matching rule is applied
+    access_control:
+        # Временно открыт весь API для разработки
+        # После создания TokenAuthenticator раскомментируйте:
+        # - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        # - { path: ^/api, roles: ROLE_USER }
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+
+when@test:
+    security:
+        password_hashers:
+            # Password hashers are resource-intensive by design to ensure security.
+            # In tests, it's safe to reduce their cost to improve performance.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

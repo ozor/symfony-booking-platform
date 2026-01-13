@@ -1,0 +1,40 @@
+framework:
+    messenger:
+        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
+        failure_transport: failed
+
+        transports:
+            # https://symfony.com/doc/current/messenger.html#transport-configuration
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000  # 1 секунда
+                    multiplier: 2
+                    max_delay: 0
+                options:
+                    stream: messages
+                    group: booking_app
+                    consumer: booking_consumer
+
+            failed: 'doctrine://default?queue_name=failed'
+            sync: 'sync://'
+
+        routing:
+            # Route messages to the transports
+            # Примеры явного указания классов (добавьте свои Message классы):
+            # 'App\Message\SendEmailMessage': async
+            # 'App\Booking\Application\Command\CreateBookingCommand': async
+            # 'App\Booking\Application\Command\CancelBookingCommand': async
+
+            # Или используйте интерфейс для автоматической маршрутизации:
+            # 'App\Shared\Application\Command\AsyncCommandInterface': async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                # replace with your transport name here (e.g., my_transport: 'in-memory://')
+                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+                async: 'in-memory://'
+                failed: 'in-memory://'

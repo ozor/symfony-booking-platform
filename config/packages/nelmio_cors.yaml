@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+nelmio_cors:
+    defaults:
+        origin_regex: true
+        allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+        allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+        expose_headers: ['Link', 'X-Total-Count', 'X-Page-Count']
+        allow_credentials: true
+        max_age: 3600
+    paths:
+        '^/api':
+            allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
+            allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+            max_age: 3600
+
+when@prod:
+    nelmio_cors:
+        paths:
+            '^/api':
+                # В production используйте конкретный домен вместо regex
+                allow_origin: ['https://yourdomain.com']
+                allow_credentials: true

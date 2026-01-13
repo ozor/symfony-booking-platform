@@ -1,19 +1,30 @@
 framework:
     cache:
         # Unique name of your app: used to compute stable namespaces for cache keys.
-        #prefix_seed: your_vendor_name/app_name
+        prefix_seed: 'booking_platform'
 
-        # The "app" cache stores to the filesystem by default.
-        # The data in this cache should persist between deploys.
-        # Other options include:
+        # Use Redis for app cache
+        app: cache.adapter.redis
+        default_redis_provider: '%env(REDIS_URL)%'
 
-        # Redis
-        #app: cache.adapter.redis
-        #default_redis_provider: redis://localhost
+        # Namespaced pools
+        pools:
+            # Для Doctrine query cache
+            doctrine.result_cache_pool:
+                adapter: cache.adapter.redis
+                default_lifetime: 3600
 
-        # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
-        #app: cache.adapter.apcu
+            # Для системного кэша
+            doctrine.system_cache_pool:
+                adapter: cache.adapter.redis
+                default_lifetime: 86400
 
-        # Namespaced pools use the above "app" backend by default
-        #pools:
-            #my.dedicated.cache: null
+            # Кастомный пул для API responses
+            api.cache_pool:
+                adapter: cache.adapter.redis
+                default_lifetime: 3600
+
+when@prod:
+    framework:
+        cache:
+            app: cache.adapter.redis

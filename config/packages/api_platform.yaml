@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+api_platform:
+    title: 'Booking Platform API'
+    version: 1.0.0
+    description: 'API для платформы бронирования'
+
+    show_webby: false  # Убрать "Powered by API Platform"
+
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+            max_age: 0
+            shared_max_age: 3600
+
+        # Pagination
+        pagination_client_enabled: true
+        pagination_client_items_per_page: true
+        pagination_items_per_page: 30
+        pagination_maximum_items_per_page: 100
+
+when@prod:
+    api_platform:
+        # Для production можно отключить документацию
+        # enable_docs: false
+        defaults:
+            cache_headers:
+                max_age: 3600

@@ -1,0 +1,112 @@
+version: "3.8"
+
+services:
+    # PHP + Xdebug
+    php:
+        build:
+            context: ./docker/php
+            dockerfile: Dockerfile
+        container_name: booking_php
+        volumes:
+            - ./:/app
+            - ./docker/php/php.ini:/usr/local/etc/php/conf.d/app.ini
+            - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+        environment:
+            SYMFONY_ENV: ${SYMFONY_ENV:-dev}
+            DATABASE_URL: ${DATABASE_URL}
+            REDIS_URL: ${REDIS_URL}
+            XDEBUG_MODE: ${XDEBUG_MODE:-debug}
+            XDEBUG_CONFIG: ${XDEBUG_CONFIG:-client_host=host.docker.internal client_port=9003}
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
+    # Nginx
+    nginx:
+        image: nginx:alpine
+        container_name: booking_nginx
+        ports:
+            - "8086:80"
+        volumes:
+            - ./:/app
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+        depends_on:
+            - php
+
+    # PostgreSQL
+    postgres:
+        image: postgres:${POSTGRES_VERSION:-18}
+#        image: postgres:${POSTGRES_VERSION:-18}-alpine
+        container_name: booking_postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-postgres}
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "5432:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data:rw
+            # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+            # - ./docker/db/data:/var/lib/postgresql/data:rw
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 60s
+
+    # Redis (кэш / messenger transport)
+    redis:
+        image: redis:7
+        container_name: booking_redis
+        ports:
+            - "6379:6379"
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
+    # Worker — Symfony Messenger
+    worker:
+        build:
+            context: ./docker/php
+            dockerfile: Dockerfile
+        container_name: booking_worker
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_started
+            php:
+                condition: service_started
+        volumes:
+            - ./:/app
+            - ./docker/php/php.ini:/usr/local/etc/php/conf.d/app.ini
+        environment:
+            MESSENGER_TRANSPORTS: ${MESSENGER_TRANSPORTS:-async}
+            MESSENGER_CONSUME_OPTS: ${MESSENGER_CONSUME_OPTS:--vv}
+            DATABASE_URL: ${DATABASE_URL}
+            REDIS_URL: ${REDIS_URL}
+            SYMFONY_ENV: ${SYMFONY_ENV:-dev}
+            XDEBUG_MODE: ${XDEBUG_MODE:-debug}
+            XDEBUG_CONFIG: ${XDEBUG_CONFIG:-client_host=host.docker.internal client_port=9003}
+        command: ["sh", "-lc", "php bin/console messenger:consume ${MESSENGER_CONSUME_OPTS} ${MESSENGER_TRANSPORTS}"]
+
+    # Mailhog — локальный SMTP перехватчик
+    mailhog:
+        image: mailhog/mailhog:latest
+        container_name: booking_mailhog
+        ports:
+            - "1025:1025"  # SMTP порт
+            - "8025:8025"  # Web UI
+
+volumes:
+    pgdata:
+        driver: local

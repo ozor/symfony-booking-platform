@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -10,3 +8,16 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
+.idea/
+.vscode/
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
+
+# config/reference.php - автоматически генерируемый файл
+/config/reference.php
+
+symfony-booking-platform-notes/
+other-scripts/
