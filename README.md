@@ -10,6 +10,7 @@
 
 ## Технологический стек
 
+- **PHP 8.5** с FPM
 - **Symfony 8.0** - PHP фреймворк
 - **API Platform** - REST/GraphQL API
 - **Doctrine ORM** - Database abstraction
@@ -48,8 +49,10 @@ docker compose exec php php bin/console doctrine:fixtures:load --no-interaction
 - **API / Web приложение**: http://localhost:8086
 - **API Platform документация**: http://localhost:8086/api
 - **Mailhog (SMTP UI)**: http://localhost:8025
-- **PostgreSQL**: localhost:5432 (user: postgres, password: postgres, db: postgres)
+- **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
+
+Реквизиты доступа см. в `.env` файле.
 
 ## Разработка
 
@@ -102,7 +105,7 @@ docker compose exec php php bin/console make:migration
 docker compose exec php php bin/console doctrine:migrations:migrate
 
 # Подключиться к PostgreSQL через psql
-docker compose exec postgres psql -U postgres -d postgres
+docker compose exec postgres psql -U <user> -d <database>
 
 # Дамп схемы БД
 docker compose exec php php bin/console doctrine:schema:update --dump-sql
@@ -161,7 +164,7 @@ docker compose up -d
 **Ошибки БД подключения:**
 ```bash
 # Проверить, что postgres готов
-docker compose exec postgres pg_isready -U postgres -d postgres
+docker compose exec postgres pg_isready -U <user> -d <database>
 
 # Проверить переменные окружения
 docker compose exec php env | grep DATABASE
@@ -172,5 +175,5 @@ docker compose exec php env | grep DATABASE
 
 ## Лицензия
 
-...
+[Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/). 
 
