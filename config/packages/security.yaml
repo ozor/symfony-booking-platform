@@ -8,14 +8,13 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        # Временно закомментировано - User entity не существует
-        # user_provider:
-        #     entity:
-        #         class: App\User\Domain\Entity\User
-        #         property: email
-        users_in_memory:
-            memory:
-                users: []
+        user_provider:
+            entity:
+                class: App\User\Domain\Entity\User
+                property: email
+        # users_in_memory:
+        #     memory:
+        #         users: []
 
     # Role hierarchy
     role_hierarchy:
@@ -28,15 +27,18 @@ security:
             pattern: ^/(_profiler|_wdt|css|images|js)/
             security: false
 
-        # API firewall - временно без аутентификации
+        login:
+            pattern: ^/api/login
+            stateless: true
+            json_login:
+                check_path: /api/login_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
         api:
             pattern: ^/api
             stateless: true
-            # Закомментировано до создания TokenAuthenticator
-            # provider: user_provider
-            # custom_authenticators:
-            #     - App\Security\TokenAuthenticator
-            # entry_point: App\Security\TokenAuthenticator
+            jwt: ~
 
         # Main firewall для остальных путей
         main:
@@ -48,12 +50,9 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # Временно открыт весь API для разработки
-        # После создания TokenAuthenticator раскомментируйте:
-        # - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        # - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        # - { path: ^/api/docs, roles: PUBLIC_ACCESS }
-        # - { path: ^/api, roles: ROLE_USER }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
 
 when@test:
