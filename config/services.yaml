@@ -4,9 +4,10 @@
 # Files in the packages/ subdirectory configure your dependencies.
 # See also https://symfony.com/doc/current/service_container/import.html
 
+
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-parameters:
+#parameters:
 
 services:
     # default configuration for services in *this* file
@@ -18,6 +19,21 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+
+    # User Domain - Repository
+    App\User\Domain\Repository\UserRepositoryInterface:
+        class: App\User\Infrastructure\Doctrine\Repository\DoctrineUserRepository
+        arguments:
+            $registry: '@doctrine'
+
+    # User Domain - Services
+    App\User\Domain\Service\PasswordHasherInterface:
+        class: App\User\Infrastructure\Security\SymfonyPasswordHasher
+        arguments:
+            $passwordHasher: '@security.user_password_hasher'
+
+    App\User\Domain\Service\UniqueEmailCheckerInterface:
+        class: App\User\Infrastructure\Service\UniqueEmailChecker
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

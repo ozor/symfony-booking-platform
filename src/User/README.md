@@ -17,15 +17,50 @@ User определяет **политику доступа и права**, ч�
 
 - регистрация / логин
 - роли и права (admin, manager, staff, customer)
-- профиль пользовател
+- профиль пользователя
 - авторизация (JWT / API token)
+- multi-tenancy поддержка
+
+## Структура Domain слоя
+
+### Entity (Агрегаты)
+- **User** - корневой агрегат, представляющий пользователя системы
+
+### Value Objects
+- **UserId** - уникальный идентификатор пользователя (UUID v7)
+- **Email** - email адрес с валидацией
+- **HashedPassword** - захешированный пароль
+- **UserRole** - enum ролей пользователя (ADMIN, MANAGER, STAFF, CUSTOMER)
+
+### Repository
+- **UserRepositoryInterface** - интерфейс репозитория для работы с User агрегатом
+
+### Domain Services
+- **PasswordHasherInterface** - сервис для хеширования и проверки паролей
+- **UniqueEmailCheckerInterface** - сервис проверки уникальности email
+
+### Domain Events
+- **UserCreated** - пользователь создан
+- **UserEmailChanged** - email изменён
+- **UserPasswordChanged** - пароль изменён
+- **UserActivated** - пользователь активирован
+- **UserDeactivated** - пользователь деактивирован
 
 ## Основные элементы
 
 - Сущность: `User`
-- VO: `UserId`, `Email`
-- Roles: `Admin`, `Manager`, `Customer`
+- VO: `UserId`, `Email`, `PhoneNumber`, `HashedPassword`, `UserRole`
+- Roles: `Admin`, `Manager`, `Staff`, `Customer`
 
 ## Взаимодействие
 
 Используется в Booking и Tenant для проверки прав доступа и разграничения контекста арендаторов.
+
+## Принципы DDD
+
+- Все интерфейсы находятся в Domain слое
+- Реализация инфраструктуры (ORM, Security) в Infrastructure слое
+- Использование Value Objects для примитивов
+- Domain Events для отслеживания важных изменений
+- Агрегат User инкапсулирует бизнес-логику
+
