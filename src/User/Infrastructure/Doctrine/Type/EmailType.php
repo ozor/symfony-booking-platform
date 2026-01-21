@@ -65,6 +65,10 @@ final class EmailType extends Type
             return $value->value();
         }
 
+        if (is_string($value)) {
+            return $value;
+        }
+
         throw new ConversionException(sprintf(
             'Expected %s or null, got %s',
             Email::class,
