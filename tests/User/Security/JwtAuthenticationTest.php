@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\User\Security;
 
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -11,8 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
  * JWT Authentication Integration Test
  *
  * These tests validate the JWT authentication configuration and security setup.
- * They do not require actual users in the database.
+ * Requires Docker environment with PostgreSQL.
  */
+#[Group('integration')]
+#[Group('database')]
 class JwtAuthenticationTest extends WebTestCase
 {
     public function testLoginEndpointExistsAndAcceptsJson(): void

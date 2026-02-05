@@ -151,6 +151,30 @@ PHP и worker контейнеры ждут готовности зависим�
 
 ### Типичные проблемы
 
+**❌ "service php is not running container #1"**
+
+Используйте автоматический скрипт исправления:
+```bash
+bash other-scripts/fix-docker-php.sh
+```
+
+Или вручную:
+```bash
+# Остановить контейнеры
+docker compose down
+
+# Пересобрать PHP контейнер
+docker compose build --no-cache php
+
+# Запустить заново
+docker compose up -d
+
+# Проверить статус
+docker compose ps
+```
+
+Подробнее: `symfony-booking-platform-notes/DOCKER_PHP_QUICK_FIX.md`
+
 **Контейнер не запускается:**
 ```bash
 # Проверить логи
@@ -161,17 +185,55 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+**Docker daemon не запущен:**
+```bash
+# Запустить Docker
+sudo systemctl start docker
+
+# Включить автозапуск
+sudo systemctl enable docker
+
+# Проверить права доступа
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
 **Ошибки БД подключения:**
 ```bash
 # Проверить, что postgres готов
-docker compose exec postgres pg_isready -U <user> -d <database>
+docker compose exec postgres pg_isready -U postgres -d postgres
 
 # Проверить переменные окружения
 docker compose exec php env | grep DATABASE
+
+# Применить миграции
+docker compose exec php php bin/console doctrine:migrations:migrate
 ```
 
 **Порты заняты:**
-- Измените маппинг портов в `docker-compose.yml` (например, `5433:5432` вместо `5432:5432`)
+```bash
+# Проверить, какой процесс использует порт
+sudo lsof -i :8086
+sudo lsof -i :5432
+
+# Или изменить маппинг портов в docker-compose.yml
+# Например: 5433:5432 вместо 5432:5432
+```
+
+### Полезные скрипты
+
+Доступны автоматические скрипты для решения проблем:
+
+```bash
+# Автоматическое исправление Docker проблем
+bash other-scripts/fix-docker-php.sh
+
+# Диагностика Docker
+bash other-scripts/diagnose-docker.sh
+
+# Запуск контейнеров
+bash other-scripts/start-docker.sh
+```
 
 ## Лицензия
 
